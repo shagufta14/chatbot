@@ -46,6 +46,34 @@ def generate_answers(content, query):
     except Exception as e:
         return f"Error: {str(e)}"
 
+def generate_answers(content, query):
+    # Step 1: Ask Gemini if the question is answerable from the content
+    relevance_prompt = f"""
+    Based on the following PDF content:
+    {content}
+    Can the following question be answered strictly using only the information in the PDF?
+    Question: "{query}"
+    Reply with only "Yes" or "No".
+    """
+    try:
+        relevance_response = model.generate_content(relevance_prompt)
+        if relevance_response.text.strip().lower().startswith("yes"):
+            # Step 2: If relevant, generate the actual answer
+            answer_prompt = f"""
+            📄 Based on the following PDF content:
+            {content}
+            ❓ Question:
+            {query}
+            ✍️ Please provide a concise and relevant answer using only the information from the PDF.
+            """
+            response = model.generate_content(answer_prompt)
+            return response.text if response else "No answer generated."
+        else:
+             return "❌ This question cannot be answered using the information from the PDF."
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+
 # Streamlit UI
 st.set_page_config(page_title="📘 PDF Answer Bot")
 st.header("📄 HOW TO MAKE MONEY AND BEST SKILLS TO LEARN")
